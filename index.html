@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#C41230" />
+  <meta name="description" content="Trợ lý AI cá nhân dành riêng cho sinh viên Bách Khoa Hà Nội" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>HUSTBot - Trợ lý AI Sinh viên</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=5" />
+  <!-- Gemini API SDK (UMD build via esm.run shim) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "@google/genai": "https://esm.sh/@google/genai@1.9.0"
+    }
+  }
+  </script>
+  <script type="module">
+    import { GoogleGenAI } from '@google/genai';
+    window.GoogleGenAI = GoogleGenAI;
+  </script>
+</head>
+
+<body>
+  <div id="app">
+    <div id="splash" class="splash">
+      <div class="splash-content">
+        <div class="splash-logo">🎓</div>
+        <h1 class="splash-title">HUSTBot</h1>
+        <p class="splash-sub">Trợ lý AI Sinh viên Bách Khoa</p>
+        <div class="splash-loader">
+          <div class="loader-bar"></div>
+        </div>
+      </div>
+    </div>
+    <div id="main" class="main hidden">
+      <header class="header" id="header">
+        <div class="header-left">
+          <div class="avatar-wrap">
+            <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=C41230&color=fff&bold=true&size=64"
+              alt="Ảnh đại diện" class="avatar" id="user-avatar" />
+            <span class="avatar-badge online"></span>
+          </div>
+          <div class="header-info">
+            <span class="greeting" id="greeting-text">Xin chào!</span>
+            <span class="username" id="username">Nguyễn Văn A</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="btn-icon notif-btn" id="notif-btn" aria-label="Thông báo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            <span class="notif-dot hidden" id="notif-dot"></span>
+          </button>
+          <button class="btn-icon" id="settings-btn" aria-label="Cài đặt">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="pages" id="pages">
+
+        <!-- HOME PAGE -->
+        <div class="page active" id="page-home">
+          <section class="section-stats" aria-label="Thống kê nhanh">
+            <div class="stat-card urgent">
+              <div class="stat-icon">🔥</div>
+              <div class="stat-info">
+                <span class="stat-num" id="count-overdue">0</span>
+                <span class="stat-label">Quá hạn</span>
+              </div>
+            </div>
+            <div class="stat-card warning">
+              <div class="stat-icon">⚡</div>
+              <div class="stat-info">
+                <span class="stat-num" id="count-today">0</span>
+                <span class="stat-label">Hôm nay</span>
+              </div>
+            </div>
+            <div class="stat-card info">
+              <div class="stat-icon">📅</div>
+              <div class="stat-info">
+                <span class="stat-num" id="count-week">0</span>
+                <span class="stat-label">Tuần này</span>
+              </div>
+            </div>
+            <div class="stat-card success">
+              <div class="stat-icon">✅</div>
+              <div class="stat-info">
+                <span class="stat-num" id="count-done">0</span>
+                <span class="stat-label">Đã nộp</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" aria-label="Sắp đến hạn">
+            <div class="section-header">
+              <h2 class="section-title">Sắp đến hạn</h2>
+              <button class="btn-text" id="see-all-btn">Xem tất cả</button>
+            </div>
+            <div id="upcoming-list" class="upcoming-list" role="list"></div>
+          </section>
+
+          <section class="section" aria-label="Danh sách bài tập">
+            <div class="section-header">
+              <h2 class="section-title">Bài tập</h2>
+            </div>
+            <div class="filter-tabs" role="tablist">
+              <button class="tab-btn active" data-filter="all" role="tab" aria-selected="true">Tất cả</button>
+              <button class="tab-btn" data-filter="teams" role="tab" aria-selected="false">Teams</button>
+              <button class="tab-btn" data-filter="fami" role="tab" aria-selected="false">FAMI</button>
+              <button class="tab-btn" data-filter="lms" role="tab" aria-selected="false">LMS</button>
+            </div>
+            <div id="assignments-list" class="assignments-list" role="list"></div>
+          </section>
+
+          <div class="push-banner hidden" id="push-banner">
+            <div class="push-banner-icon">🔔</div>
+            <div class="push-banner-text">
+              <strong>Bật thông báo</strong>
+              <span>Nhận nhắc nhở trước khi đến hạn</span>
+            </div>
+            <button class="btn-primary-sm" id="enable-push-btn">Bật</button>
+            <button class="btn-close" id="dismiss-push-btn" aria-label="Đóng">✕</button>
+          </div>
+        </div>
+
+        <!-- ASSIGNMENTS PAGE -->
+        <div class="page" id="page-assignments">
+          <div class="page-header-inner">
+            <button class="btn-back" id="back-from-all" aria-label="Quay lại">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+              </svg>
+            </button>
+            <h2>Tất cả bài tập</h2>
+          </div>
+          <div class="filter-tabs" role="tablist" style="margin:0 16px 8px">
+            <button class="tab-btn active" data-filter2="all" role="tab">Tất cả</button>
+            <button class="tab-btn" data-filter2="teams" role="tab">Teams</button>
+            <button class="tab-btn" data-filter2="fami" role="tab">FAMI</button>
+            <button class="tab-btn" data-filter2="lms" role="tab">LMS</button>
+            <button class="tab-btn" data-filter2="done" role="tab">Đã nộp</button>
+          </div>
+          <div id="all-assignments-list" class="assignments-list" style="padding:0 16px" role="list"></div>
+        </div>
+
+        <!-- DETAIL PAGE -->
+        <div class="page" id="page-detail">
+          <div class="page-header-inner">
+            <button class="btn-back" id="back-from-detail" aria-label="Quay lại">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+              </svg>
+            </button>
+            <h2 id="detail-page-title">Chi tiết</h2>
+          </div>
+          <div id="detail-content" class="detail-content"></div>
+        </div>
+
+        <!-- NOTIFICATIONS PAGE -->
+        <div class="page" id="page-notifications">
+          <div class="page-header-inner">
+            <button class="btn-back" id="back-from-notif" aria-label="Quay lại">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+              </svg>
+            </button>
+            <h2>🔔 Thông báo</h2>
+          </div>
+          <div id="notif-list" class="notif-list"></div>
+        </div>
+
+        <!-- SETTINGS PAGE -->
+        <div class="page" id="page-settings">
+          <div class="page-header-inner">
+            <button class="btn-back" id="back-from-settings" aria-label="Quay lại">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+              </svg>
+            </button>
+            <h2>⚙️ Cài đặt thông báo</h2>
+          </div>
+          <div class="settings-content">
+            <div class="settings-group">
+              <div class="settings-group-title">Loại thông báo</div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-title">📢 Bài tập mới</div>
+                  <div class="settings-row-desc">Thông báo khi có bài tập mới được giao</div>
+                </div>
+                <button class="toggle" id="setting-notify-new"></button>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-title">⏰ Nhắc hạn nộp bài</div>
+                  <div class="settings-row-desc">Nhắc nhở trước khi đến hạn nộp</div>
+                </div>
+                <button class="toggle" id="setting-notify-deadline"></button>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-title">🏃 Hoạt động ngoại khóa</div>
+                  <div class="settings-row-desc">Thông báo sự kiện điểm rèn luyện mới (sắp ra mắt)</div>
+                </div>
+                <button class="toggle" id="setting-notify-events"></button>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <div class="settings-group-title">Nhắc hạn trước bao lâu</div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-title">🔔 Trước 1 ngày</div>
+                </div>
+                <button class="toggle" id="setting-warn-1d"></button>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-title">🔔 Trước 3 ngày</div>
+                </div>
+                <button class="toggle" id="setting-warn-3d"></button>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-title">🔔 Trước 1 tuần</div>
+                </div>
+                <button class="toggle" id="setting-warn-7d"></button>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <div class="settings-group-title">Thông tin ứng dụng</div>
+              <div class="settings-info-card">
+                <div class="settings-app-name">HUSTBot</div>
+                <div class="settings-app-desc">Trợ lý AI cá nhân dành riêng cho sinh viên Bách Khoa Hà Nội</div>
+                <div class="settings-app-version">Phiên bản 0.2.0 (Demo)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHAT PAGE (placeholder) -->
+        <div class="page" id="page-chat">
+          <div class="coming-soon-wrap">
+            <div class="coming-soon-icon">🤖</div>
+            <h2>AI Chatbot</h2>
+            <p>Đang phát triển...<br />Tính năng này sẽ sớm có mặt!</p>
+          </div>
+        </div>
+
+        <!-- EVENTS PAGE (placeholder) -->
+        <div class="page" id="page-events">
+          <div class="coming-soon-wrap">
+            <div class="coming-soon-icon">🏆</div>
+            <h2>Hoạt động ngoại khóa</h2>
+            <p>Đang phát triển...<br />Tính năng thông báo điểm rèn luyện sẽ sớm có mặt!</p>
+          </div>
+        </div>
+
+        <!-- PROFILE PAGE (placeholder) -->
+        <div class="page" id="page-profile">
+          <div class="coming-soon-wrap">
+            <div class="coming-soon-icon">👤</div>
+            <h2>Hồ sơ sinh viên</h2>
+            <p>Đang phát triển...<br />Tính năng này sẽ sớm có mặt!</p>
+          </div>
+        </div>
+
+      </div>
+
+      <nav class="bottom-nav" id="bottom-nav" aria-label="Điều hướng chính">
+        <button class="nav-item active" data-page="home" aria-label="Trang chủ">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+          </span>
+          <span class="nav-label">Trang chủ</span>
+        </button>
+        <button class="nav-item" data-page="assignments" aria-label="Bài tập">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 11l3 3L22 4" />
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            </svg>
+          </span>
+          <span class="nav-label">Bài tập</span>
+        </button>
+        <button class="nav-item nav-center" data-page="chat" aria-label="Chat AI">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </span>
+          <span class="nav-label">AI Chat</span>
+        </button>
+        <button class="nav-item" data-page="events" aria-label="Hoạt động ngoại khóa">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+          </span>
+          <span class="nav-label">Hoạt động</span>
+        </button>
+        <button class="nav-item" data-page="profile" aria-label="Hồ sơ">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </span>
+          <span class="nav-label">Hồ sơ</span>
+        </button>
+      </nav>
+    </div>
+  </div>
+  <script src="data/mock-data.js?v=4" charset="UTF-8"></script>
+  <script src="data/hust-knowledge.js?v=2" charset="UTF-8"></script>
+  <script src="app.js?v=4" charset="UTF-8"></script>
+  <script src="chat.js?v=4" charset="UTF-8"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "BKBot - Tro ly AI Sinh vien",
+  "short_name": "BKBot",
+  "description": "Tro ly AI ca nhan danh rieng cho sinh vien Bach Khoa Ha Noi",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#C41230",
+  "theme_color": "#C41230",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
